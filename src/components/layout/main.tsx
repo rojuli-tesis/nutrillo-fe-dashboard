@@ -1,8 +1,18 @@
 "use client";
-import { Box, Flex, Icon, Link } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Icon,
+  Link,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import React from "react";
 import { MdOutlineLogout } from "react-icons/md";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 
 const MenuLinkStyle = {
   padding: "16px",
@@ -16,14 +26,38 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Box background="gray.100" h="100%">
       <Flex background="teal.700" justify="space-between" align="center">
-        <Box>
+        <Box style={{ display: "flex", alignItems: "center" }}>
           <Link style={MenuLinkStyle} as={NextLink} href="/dashboard">
-            Dashboard
-            {/* TODO: reemplazar por logo */}
+            <img src="logo.svg" alt="nutrillo" />
           </Link>
-          <Link style={MenuLinkStyle} as={NextLink} href="/patients">
-            Mis pacientes
-          </Link>
+          <Menu>
+            <MenuButton style={MenuLinkStyle}>
+              Mis pacientes
+              <ChevronDownIcon />
+            </MenuButton>
+            <MenuList>
+              <MenuItem
+                style={{
+                  color: "teal",
+                  fontWeight: "bold",
+                }}
+                as={NextLink}
+                href={"/patients"}
+              >
+                Pacientes
+              </MenuItem>
+              <MenuItem
+                style={{
+                  color: "teal",
+                  fontWeight: "bold",
+                }}
+                as={NextLink}
+                href={"/invites"}
+              >
+                Invitaciones
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </Box>
         <Link style={MenuLinkStyle} as={NextLink} href="/logout">
           Cerrar Sesion

@@ -1,7 +1,7 @@
 "use client";
 
 import restClient from "@/utils/restClient";
-import { Flex, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react";
+import { Flex, FormControl, FormLabel, VStack } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import Button from "@/components/Button";

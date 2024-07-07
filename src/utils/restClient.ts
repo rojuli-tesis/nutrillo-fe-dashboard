@@ -29,7 +29,13 @@ const get = async <T>(url: string): Promise<T> => {
   return response.data;
 };
 
+const patch = async <T>(url: string, data?: any) => {
+  const response = await instance.patch<T>(url, data);
+  return response.data;
+};
+
 const restClient = {
+  patch,
   post,
   put,
   get,

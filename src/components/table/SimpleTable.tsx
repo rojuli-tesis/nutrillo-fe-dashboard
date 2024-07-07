@@ -8,13 +8,17 @@ import {
   TableContainer,
   Box,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { ReactNode } from "react";
 
 const SimpleTable = <T extends object>({
   headers,
   data,
 }: {
-  headers: (keyof T)[];
+  headers: {
+    value: keyof T;
+    title: string;
+    cellRenderer?: (cellData: T) => string | ReactNode;
+  }[];
   data: T[];
 }) => {
   return (
@@ -29,7 +33,7 @@ const SimpleTable = <T extends object>({
           <Thead>
             <Tr>
               {headers.map((header) => (
-                <Th key={header.toString()}>{header.toString()}</Th>
+                <Th key={header.value.toString()}>{header.title}</Th>
               ))}
             </Tr>
           </Thead>
@@ -37,7 +41,11 @@ const SimpleTable = <T extends object>({
             {data.map((row, idx) => (
               <Tr key={idx}>
                 {headers.map((header) => (
-                  <Td key={header.toString()}>{String(row[header])}</Td>
+                  <Td key={header.toString()}>
+                    {header.cellRenderer
+                      ? header.cellRenderer(row)
+                      : String(row[header.value])}
+                  </Td>
                 ))}
               </Tr>
             ))}
