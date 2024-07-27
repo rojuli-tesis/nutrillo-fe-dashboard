@@ -12,6 +12,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  IconButton,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -19,21 +20,32 @@ import React, { useEffect } from "react";
 import InviteModal from "./InviteModal";
 import { Invite } from "@/shared/interfaces/invites";
 import restClient from "@/utils/restClient";
-import { LinkIcon } from "@chakra-ui/icons";
+import { LinkIcon, ArrowForwardIcon } from "@chakra-ui/icons";
+
 import InviteStatusBadge from "@/components/Badges/InviteStatusBadge";
+import { Patient } from "@/shared/interfaces/patients";
+import { useRouter } from "next/navigation";
 
 const PatientsPage = () => {
   const [inviteModalOpen, setInviteModalOpen] = React.useState(false);
   const [pendingInvites, setPendingInvites] = React.useState<Invite[]>([]);
+  const [patients, setPatients] = React.useState<Patient[]>([]);
   const toast = useToast();
+  const router = useRouter();
 
   const loadInvites = async () => {
     const data = await restClient.get<Invite[]>("/invite?status=pending");
     setPendingInvites(data);
   };
 
+  const loadPatients = async () => {
+    const data = await restClient.get<Patient[]>("/patient");
+    setPatients(data);
+  };
+
   useEffect(() => {
     loadInvites();
+    loadPatients();
   }, [inviteModalOpen]);
 
   const handleCopyInviteLink = (code: string) => {
@@ -113,6 +125,38 @@ const PatientsPage = () => {
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
+        </GridItem>
+        <GridItem>
+          <SimpleTable
+            headers={[
+              {
+                value: "firstName",
+                title: "Nombre",
+              },
+              {
+                value: "lastName",
+                title: "Apellido",
+              },
+              {
+                value: "email",
+                title: "Email",
+              },
+              {
+                value: "id",
+                title: "",
+                cellRenderer: (row) => (
+                  <IconButton
+                    aria-label="Ver paciente"
+                    size={"sm"}
+                    onClick={() => router.push(`/patients/${row.id}`)}
+                  >
+                    <ArrowForwardIcon />
+                  </IconButton>
+                ),
+              },
+            ]}
+            data={patients}
+          />
         </GridItem>
       </Grid>
       {inviteModalOpen && (
