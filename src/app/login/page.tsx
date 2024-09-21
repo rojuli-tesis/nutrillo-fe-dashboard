@@ -1,9 +1,15 @@
 "use client";
 
 import restClient from "@/utils/restClient";
-import { Flex, FormControl, FormLabel, VStack } from "@chakra-ui/react";
+import {
+  Flex,
+  FormControl,
+  FormLabel,
+  VStack,
+  FormErrorMessage,
+} from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import Button from "@/components/Button";
 import { Form, Formik, Field } from "formik";
 import * as Yup from "yup";
@@ -18,10 +24,15 @@ const ValidationSchema = Yup.object().shape({
 
 const LoginPage = () => {
   const router = useRouter();
+  const [responseError, setResponseError] = useState("");
 
   const handleSubmit = async (data: { email: string; password: string }) => {
-    await restClient.postWithCredentials("/admin/login", data);
-    router.push("/dashboard");
+    try {
+      await restClient.postWithCredentials("/admin/login", data);
+      router.push("/dashboard");
+    } catch (e) {
+      setResponseError(e.response.data);
+    }
   };
 
   return (
@@ -58,6 +69,10 @@ const LoginPage = () => {
                   component={CustomInput}
                 />
               </FormControl>
+              <FormControl isInvalid={responseError}>
+                <FormErrorMessage>{responseError}</FormErrorMessage>
+              </FormControl>
+
               <Button disabled={!isValid} colorScheme="teal" type="submit">
                 Ingresar
               </Button>

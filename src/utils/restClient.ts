@@ -20,8 +20,7 @@ const put = async (url: string, data: any) => {
 
 // Login POST
 const postWithCredentials = async (url: string, data: any) => {
-  const response = await instance.post(url, data, { withCredentials: true });
-  return response.data;
+  return await instance.post(url, data, { withCredentials: true });
 };
 
 const get = async <T>(url: string): Promise<T> => {
