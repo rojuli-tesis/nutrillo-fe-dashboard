@@ -7,8 +7,11 @@ import {
   FormLabel,
   VStack,
   FormErrorMessage,
+  Link,
+  Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import NextLink from "next/link";
 import React, { useState } from "react";
 import Button from "@/components/Button";
 import { Form, Formik, Field } from "formik";
@@ -31,7 +34,7 @@ const LoginPage = () => {
       await restClient.postWithCredentials("/admin/login", data);
       router.push("/dashboard");
     } catch (e) {
-      setResponseError(e.response.data);
+      setResponseError((e as any).response.data);
     }
   };
 
@@ -47,7 +50,7 @@ const LoginPage = () => {
     >
       <Formik
         initialValues={{
-          email: "julietarey.lp+admin@gmail.com",
+          email: "julietarey.lp+admin123@gmail.com",
           password: "1234.Abcdef",
         }}
         onSubmit={handleSubmit}
@@ -57,6 +60,7 @@ const LoginPage = () => {
         {({ isValid }) => (
           <Form style={{ width: "100%" }}>
             <VStack w="100%">
+              <Text fontSize={"3xl"}>Ingresar</Text>
               <FormControl>
                 <FormLabel>Email</FormLabel>
                 <Field name="email" component={CustomInput} />
@@ -69,10 +73,20 @@ const LoginPage = () => {
                   component={CustomInput}
                 />
               </FormControl>
-              <FormControl isInvalid={responseError}>
+              <FormControl isInvalid={!!responseError}>
                 <FormErrorMessage>{responseError}</FormErrorMessage>
               </FormControl>
-
+              <Flex>
+                <Link
+                  style={{
+                    fontSize: "12px",
+                  }}
+                  as={NextLink}
+                  href={"/login/forgot-password"}
+                >
+                  Olvide mi contraseña
+                </Link>
+              </Flex>
               <Button disabled={!isValid} colorScheme="teal" type="submit">
                 Ingresar
               </Button>
