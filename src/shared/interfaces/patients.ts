@@ -7,6 +7,7 @@ export interface Patient {
   isRegistrationFinished: boolean;
   registration: {
     finished: boolean;
+    notes?: string;
     information: {
       stepName: string;
       [key: string]: string;

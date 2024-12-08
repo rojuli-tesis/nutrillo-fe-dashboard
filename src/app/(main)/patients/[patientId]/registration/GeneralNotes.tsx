@@ -1,32 +1,24 @@
 import React, { useState } from "react";
-import { Box, Card, Textarea, useToast } from "@chakra-ui/react";
+import { Box, Card, Textarea, Text, useToast } from "@chakra-ui/react";
 import restClient from "@/utils/restClient";
 
-const Notes = ({
+const GeneralNotes = ({
   initialValue = "",
-  stepName,
   userId,
 }: {
   initialValue?: string;
-  stepName: string;
-  userId: number;
+  patientId: number;
 }) => {
-  const [storedNotes, setStoredNotes] = useState(initialValue);
   const [notes, setNotes] = useState(initialValue);
   const toast = useToast();
   const saveChanges = async () => {
-    if (notes === storedNotes) {
-      return;
-    }
     const { success } = await restClient.patch(
       `/patient/${userId}/registration-notes`,
       {
         notes,
-        section: stepName,
       },
     );
     if (success) {
-      setStoredNotes(notes);
       toast({
         title: "Notas guardadas",
         status: "success",
@@ -39,15 +31,18 @@ const Notes = ({
   return (
     <Box
       style={{
-        height: "100%",
-        margin: "0 0 0 16px",
+        marginBottom: "12px",
       }}
     >
-      <Card style={{ padding: "12px", height: "100%" }}>
-        <Textarea
+      <Card style={{ padding: "12px" }}>
+        <Text
           style={{
-            height: "100%",
+            fontWeight: "bold",
           }}
+        >
+          Notas:
+        </Text>
+        <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={saveChanges}
@@ -58,4 +53,4 @@ const Notes = ({
   );
 };
 
-export default Notes;
+export default GeneralNotes;

@@ -11,18 +11,6 @@ const DietStep = ({
     stepName: string;
   }[];
 }) => {
-  const renderSection = (
-    sectionName: string,
-    sectionData: { [key: string]: any },
-  ) => {
-    return (
-      <VStack>
-        <h1>{sectionName}</h1>
-        <pre>{JSON.stringify(sectionData, null, 2)}</pre>
-      </VStack>
-    );
-  };
-
   const info = flattenDepth(data.map(({ stepName, ...rest }) => rest));
   const subSections = flatten(info.map(keys));
 

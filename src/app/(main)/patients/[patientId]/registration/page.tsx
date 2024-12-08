@@ -9,11 +9,14 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Grid,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
 import StepResponse from "@/app/(main)/patients/[patientId]/registration/StepResponse";
 import Notes from "@/app/(main)/patients/[patientId]/registration/Notes";
+import { reduceRegistrationData } from "./helper";
+import GeneralNotes from "./GeneralNotes";
 
 const Page = () => {
   const params = useParams<{ patientId: string }>();
@@ -33,9 +36,12 @@ const Page = () => {
     return null;
   }
   return (
-    <Box
+    <Grid
+      templateRows={"auto auto 1fr"}
       style={{
         padding: "16px 32px",
+        overflow: "hidden",
+        height: "calc(100% - 56px)",
       }}
     >
       <Breadcrumb>
@@ -62,44 +68,36 @@ const Page = () => {
       >
         {patientData.firstName} {patientData.lastName} - Formulario de registro
       </Text>
-      {patientData.registration.information
-        //   TODO: fix typescript
-        .reduce((acc, info) => {
-          if (info.stepName.includes("diet")) {
-            const existing = acc.find((item) => item.stepName === "diet");
-            if (existing) {
-              existing.data = [...existing.data, info];
-              return acc;
-            } else {
-              const temp = {
-                stepName: "diet",
-                data: [info],
-              };
-              return [...acc, temp];
-            }
-          }
-          if (info.stepName.includes("routine")) {
-            const existing = acc.find((item) => item.stepName === "routine");
-            if (existing) {
-              existing.data = [...existing.data, info];
-              return acc;
-            } else {
-              const temp = {
-                stepName: "routine",
-                data: [info],
-              };
-              return [...acc, temp];
-            }
-          }
-          return [...acc, info];
-        }, [])
-        .map((info, index) => (
-          <Grid templateColumns="40% 60% " key={info.stepName}>
-            <StepResponse data={info} />
-            <Notes stepName={info.stepName} />
-          </Grid>
-        ))}
-    </Box>
+      <Box
+        style={{
+          overflow: "scroll",
+          paddingBottom: "36px",
+        }}
+      >
+        <GeneralNotes
+          initialValue={patientData.registration.notes}
+          userId={params.patientId}
+        />
+        {reduceRegistrationData(patientData.registration.information).map(
+          (info) => (
+            <Grid
+              templateColumns="40% 60% "
+              style={{
+                margin: "16px 0",
+              }}
+              key={info.stepName}
+            >
+              <StepResponse data={info} />
+              <Notes
+                stepName={info.stepName}
+                initialValue={info.notes}
+                userId={params.patientId}
+              />
+            </Grid>
+          ),
+        )}
+      </Box>
+    </Grid>
   );
 };
 

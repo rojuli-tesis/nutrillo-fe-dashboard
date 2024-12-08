@@ -19,6 +19,7 @@ import * as Yup from "yup";
 
 import LoginLayout from "./layout";
 import CustomInput from "@/components/CustomInput";
+import { AxiosError, isAxiosError } from "axios";
 
 const ValidationSchema = Yup.object().shape({
   email: Yup.string().email("Email inválido").required("Email es requerido"),
@@ -34,7 +35,16 @@ const LoginPage = () => {
       await restClient.postWithCredentials("/admin/login", data);
       router.push("/dashboard");
     } catch (e) {
-      setResponseError((e as any).response.data);
+      if (isAxiosError(e)) {
+        const axiosError: AxiosError<{
+          message: string;
+        }> = e;
+        setResponseError(
+          axiosError.response?.data.message || "Error desconocido",
+        );
+      } else {
+        setResponseError("Error desconocido");
+      }
     }
   };
 
