@@ -7,12 +7,12 @@ const GeneralNotes = ({
   userId,
 }: {
   initialValue?: string;
-  patientId: number;
+  userId: number;
 }) => {
   const [notes, setNotes] = useState(initialValue);
   const toast = useToast();
   const saveChanges = async () => {
-    const { success } = await restClient.patch(
+    const { success } = await restClient.patch<{ success: boolean }>(
       `/patient/${userId}/registration-notes`,
       {
         notes,

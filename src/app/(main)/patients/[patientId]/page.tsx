@@ -13,6 +13,8 @@ import {
   CardHeader,
   Grid,
   Text,
+  Badge,
+  Flex,
 } from "@chakra-ui/react";
 import Button from "@/components/Button";
 
@@ -93,13 +95,16 @@ const PatientPage = () => {
               Formulario inicial
             </Text>
           </CardHeader>
-
           <CardFooter>
-            {patientData.isRegistrationFinished && (
-              <Button onClick={redirectToRegistrationPage}>
+            <Flex justifyContent={"space-between"} alignItems={"center"} w={"100%"}>
+              <Badge colorScheme={patientData.isRegistrationFinished ? "green" : "red"}>{
+                patientData.isRegistrationFinished ? "Completado" : "En proceso"
+              }</Badge>
+              <Button disabled={!patientData.isRegistrationFinished} onClick={redirectToRegistrationPage}>
                 Ver formulario
               </Button>
-            )}
+
+            </Flex>
           </CardFooter>
         </Card>
       </Grid>

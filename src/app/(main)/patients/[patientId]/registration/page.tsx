@@ -76,7 +76,7 @@ const Page = () => {
       >
         <GeneralNotes
           initialValue={patientData.registration.notes}
-          userId={params.patientId}
+          userId={+params.patientId}
         />
         {reduceRegistrationData(patientData.registration.information).map(
           (info) => (
@@ -91,7 +91,7 @@ const Page = () => {
               <Notes
                 stepName={info.stepName}
                 initialValue={info.notes}
-                userId={params.patientId}
+                userId={+params.patientId}
               />
             </Grid>
           ),

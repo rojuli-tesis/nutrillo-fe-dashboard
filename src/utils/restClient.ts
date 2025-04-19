@@ -1,35 +1,45 @@
 import axios from "axios";
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
-
-const instance = axios.create({
-  baseURL,
-  headers: { "Content-Type": "application/json" },
+// Create an axios instance with default config
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
+// Add response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error:", error);
+    return Promise.reject(error);
+  }
+);
+
 const post = async (url: string, data: any) => {
-  const response = await instance.post(url, data);
+  const response = await apiClient.post(url, data);
   return response.data;
 };
 
 const put = async (url: string, data: any) => {
-  const response = await instance.put(url, data);
+  const response = await apiClient.put(url, data);
   return response.data;
 };
 
 // Login POST
 const postWithCredentials = async (url: string, data: any) => {
-  return await instance.post(url, data, { withCredentials: true });
+  return await apiClient.post(url, data, { withCredentials: true });
 };
 
 const get = async <T>(url: string): Promise<T> => {
-  const response = await instance.get<T>(url);
+  const response = await apiClient.get<T>(url);
   return response.data;
 };
 
 const patch = async <T>(url: string, data?: any) => {
-  const response = await instance.patch<T>(url, data);
+  const response = await apiClient.patch<T>(url, data);
   return response.data;
 };
 

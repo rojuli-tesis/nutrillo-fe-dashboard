@@ -1,4 +1,5 @@
 interface StepData {
+  notes: string | undefined;
   stepName: string;
   data?: StepInfo[];
 }
@@ -21,10 +22,10 @@ export function reduceRegistrationData(data: StepInfo[]): StepData[] {
       if (existing) {
         existing.data?.push(info);
       } else {
-        acc.push({ stepName: key, data: [info] });
+        acc.push({ stepName: key, data: [info], notes: undefined });
       }
     } else {
-      acc.push(info);
+      acc.push({ ...info, notes: undefined });
     }
 
     return acc;

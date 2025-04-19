@@ -86,7 +86,7 @@ const PatientsPage = () => {
           </Flex>
         </GridItem>
         <GridItem>
-          <Accordion allowToggle>
+          <Accordion allowToggle marginBottom="16px">
             <AccordionItem>
               <h2>
                 <AccordionButton>
