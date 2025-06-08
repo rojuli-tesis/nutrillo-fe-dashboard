@@ -60,7 +60,7 @@ const LoginPage = () => {
     >
       <Formik
         initialValues={{
-          email: "julietarey.lp+admin123@gmail.com",
+          email: "julietarey.lp+admin2@gmail.com",
           password: "1234.Abcdef",
         }}
         onSubmit={handleSubmit}

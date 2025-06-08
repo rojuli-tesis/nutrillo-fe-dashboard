@@ -58,6 +58,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               </MenuItem>
             </MenuList>
           </Menu>
+          <Link style={MenuLinkStyle} as={NextLink} href="/ingredients">
+            Ingredientes
+          </Link>
         </Box>
         <Link style={MenuLinkStyle} as={NextLink} href="/logout">
           Cerrar Sesion

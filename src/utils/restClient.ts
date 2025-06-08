@@ -19,12 +19,22 @@ apiClient.interceptors.response.use(
 );
 
 const post = async (url: string, data: any) => {
-  const response = await apiClient.post(url, data);
+  const config = {
+    headers: data instanceof FormData
+      ? { 'Content-Type': 'multipart/form-data' }
+      : { 'Content-Type': 'application/json' }
+  };
+  const response = await apiClient.post(url, data, config);
   return response.data;
 };
 
 const put = async (url: string, data: any) => {
-  const response = await apiClient.put(url, data);
+  const config = {
+    headers: data instanceof FormData
+      ? { 'Content-Type': 'multipart/form-data' }
+      : { 'Content-Type': 'application/json' }
+  };
+  const response = await apiClient.put(url, data, config);
   return response.data;
 };
 
@@ -43,11 +53,17 @@ const patch = async <T>(url: string, data?: any) => {
   return response.data;
 };
 
+const del = async <T>(url: string) => {
+  const response = await apiClient.delete<T>(url);
+  return response.data;
+};
+
 const restClient = {
   patch,
   post,
   put,
   get,
+  delete: del,
   postWithCredentials,
 };
 

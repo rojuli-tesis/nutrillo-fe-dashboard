@@ -83,6 +83,11 @@ const PatientPage = () => {
               Diario de registros
             </Text>
           </CardHeader>
+          <CardFooter>
+            <Button onClick={() => router.push(`/patients/${params.patientId}/meal-logs`)}>
+              Ver registros de comidas
+            </Button>
+          </CardFooter>
         </Card>
         <Card>
           <CardHeader>
@@ -103,8 +108,24 @@ const PatientPage = () => {
               <Button disabled={!patientData.isRegistrationFinished} onClick={redirectToRegistrationPage}>
                 Ver formulario
               </Button>
-
             </Flex>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Text
+              style={{
+                fontWeight: "bold",
+              }}
+              fontSize={"2xl"}
+            >
+              Plan nutricional
+            </Text>
+          </CardHeader>
+          <CardFooter>
+            <Button onClick={() => router.push(`/patients/${params.patientId}/nutrition-plan`)}>
+              Ver/Agregar documentos
+            </Button>
           </CardFooter>
         </Card>
       </Grid>

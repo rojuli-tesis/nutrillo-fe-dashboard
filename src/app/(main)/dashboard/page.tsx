@@ -63,9 +63,8 @@ const dashboardApi = {
       
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         <StatsCard
-        // redirect to patient list
-        onClick={() => router.push('/patients')}
-          title="Total Patients" 
+          onClick={() => router.push('/patients')}
+          title="Total pacientes" 
           value={patientCount} 
           color="bg-blue-500"
         />
