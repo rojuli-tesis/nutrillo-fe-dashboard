@@ -71,7 +71,7 @@ const PatientPage = () => {
       >
         {patientData.firstName} {patientData.lastName}
       </Text>
-      <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+      <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={6}>
         <Card>
           <CardHeader>
             <Text
@@ -125,6 +125,40 @@ const PatientPage = () => {
           <CardFooter>
             <Button onClick={() => router.push(`/patients/${params.patientId}/nutrition-plan`)}>
               Ver/Agregar documentos
+            </Button>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Text
+              style={{
+                fontWeight: "bold",
+              }}
+              fontSize={"2xl"}
+            >
+              Platos y recetas guardados
+            </Text>
+          </CardHeader>
+          <CardFooter>
+            <Button onClick={() => router.push(`/patients/${params.patientId}/saved-plates`)}>
+              Ver platos y recetas
+            </Button>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Text
+              style={{
+                fontWeight: "bold",
+              }}
+              fontSize={"2xl"}
+            >
+              Instrucciones personalizadas
+            </Text>
+          </CardHeader>
+          <CardFooter>
+            <Button onClick={() => router.push(`/patients/${params.patientId}/custom-instructions`)}>
+              Gestionar instrucciones
             </Button>
           </CardFooter>
         </Card>
