@@ -585,7 +585,7 @@ const SavedPlatesPage = () => {
                   <Box>
                     <Text fontWeight="bold" mb={2}>Notas del paciente:</Text>
                     <Text bg="gray.50" p={3} borderRadius="md" fontStyle="italic">
-                      "{selectedPlate.userNotes}"
+                      &quot;{selectedPlate.userNotes}&quot;
                     </Text>
                   </Box>
                 )}

@@ -28,17 +28,37 @@ import {
   Center,
   IconButton,
   Textarea,
+  VStack,
+  HStack,
+  SimpleGrid,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Progress,
 } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
-import { FiUpload } from "react-icons/fi";
+import { 
+  FiUpload, 
+  FiDownload, 
+  FiEye, 
+  FiTrash2, 
+  FiCalendar,
+  FiFileText,
+  FiUser
+} from "react-icons/fi";
 import { Patient } from "@/shared/interfaces/patients";
 import restClient from "@/utils/restClient";
+import ChakraFileUpload from "@/components/FileUpload/ChakraFileUpload";
 
 interface NutritionPlanDoc {
   _id: string;
   fileName: string;
   url: string;
   uploadedAt: string;
+  fileSize?: string;
+  notes?: string;
+  isActive?: boolean;
 }
 
 const NutritionPlanPage = () => {
@@ -48,7 +68,7 @@ const NutritionPlanPage = () => {
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [notes, setNotes] = useState("");
   const toast = useToast();
 
@@ -73,36 +93,92 @@ const NutritionPlanPage = () => {
     // eslint-disable-next-line
   }, [params.patientId]);
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragActive(false);
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    await uploadFile(file);
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    await uploadFile(file);
-  };
-
-  const uploadFile = async (file: File) => {
+  const handleFileSelect = async (file: File) => {
     setUploading(true);
+    setUploadProgress(0);
+
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
     try {
       const formData = new FormData();
       formData.append("document", file);
       formData.append("notes", notes);
-      console.log(formData);
+      
       await restClient.post(`/nutrition-plan/patient/${params.patientId}/upload`, formData);
-      toast({ title: "Plan subido exitosamente", status: "success" });
+      
+      toast({ 
+        title: "Plan subido exitosamente", 
+        description: `El plan "${file.name}" ha sido subido correctamente`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      
       onClose();
+      setNotes("");
       loadData();
     } catch (e) {
-      toast({ title: "Error subiendo el plan", status: "error" });
+      toast({ 
+        title: "Error subiendo el plan", 
+        description: "Hubo un problema al subir el archivo. Inténtalo de nuevo.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      clearInterval(progressInterval);
     }
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    try {
+      await restClient.delete(`/nutrition-plan/${planId}`);
+      toast({
+        title: "Plan eliminado",
+        description: "El plan ha sido eliminado correctamente",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      loadData();
+    } catch (e) {
+      toast({
+        title: "Error eliminando el plan",
+        description: "No se pudo eliminar el plan. Inténtalo de nuevo.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (loading) {
@@ -131,79 +207,210 @@ const NutritionPlanPage = () => {
           <BreadcrumbLink>Plan nutricional</BreadcrumbLink>
         </BreadcrumbItem>
       </Breadcrumb>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading color="teal.500" size="lg">
-          Plan nutricional de {patientData?.firstName} {patientData?.lastName}
-        </Heading>
-        <Button leftIcon={<FiUpload />} colorScheme="teal" onClick={onOpen}>
-          Agregar nuevo plan
-        </Button>
-      </Flex>
-      <Stack spacing={4}>
-        {docs.length === 0 ? (
-          <Card><CardBody><Text>No hay planes subidos aún.</Text></CardBody></Card>
-        ) : (
-          docs.map((doc, idx) => (
-            <Card key={doc._id} borderColor={idx === 0 ? "teal.400" : undefined} borderWidth={idx === 0 ? 2 : 1}>
+      <VStack spacing={6} align="stretch">
+        <Flex justify="space-between" align="center">
+          <VStack align="start" spacing={1}>
+            <Heading color="teal.500" size="lg">
+              Planes Nutricionales
+            </Heading>
+            <Text color="gray.600" fontSize="md">
+              Gestiona los planes nutricionales de {patientData?.firstName} {patientData?.lastName}
+            </Text>
+          </VStack>
+          <Button leftIcon={<FiUpload />} colorScheme="teal" onClick={onOpen}>
+            Agregar nuevo plan
+          </Button>
+        </Flex>
+
+        {/* Active Plan Alert */}
+        {docs.length > 0 && (
+          <Alert status="info">
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Plan Activo</AlertTitle>
+              <AlertDescription>
+                El plan más reciente es: <strong>{docs[0].fileName}</strong>. 
+                Este es el plan actual que debe seguir el paciente.
+              </AlertDescription>
+            </Box>
+          </Alert>
+        )}
+
+        {/* Plans List */}
+        <Box>
+          <Text fontSize="lg" fontWeight="semibold" mb={4}>
+            Planes Existentes ({docs.length})
+          </Text>
+          
+          {docs.length === 0 ? (
+            <Card>
               <CardBody>
-                <Flex justify="space-between" align="center">
-                  <Box>
-                    <Text fontWeight="bold">{doc.fileName}</Text>
-                    <Text fontSize="sm" color="gray.500">{new Date(doc.uploadedAt).toLocaleString()}</Text>
-                  </Box>
-                  <Flex align="center" gap={2}>
-                    {idx === 0 && <Badge colorScheme="teal">Activo</Badge>}
-                    <Button as="a" href={doc.url} target="_blank" size="sm" colorScheme="teal" variant="outline">Ver</Button>
-                  </Flex>
-                </Flex>
+                <Center py={8}>
+                  <VStack spacing={4}>
+                    <FiFileText size={48} color="#A0AEC0" />
+                    <Text color="gray.500" fontSize="lg">
+                      No hay planes nutricionales disponibles
+                    </Text>
+                    <Text color="gray.400" fontSize="sm">
+                      Sube el primer plan usando el botón &quot;Agregar nuevo plan&quot;
+                    </Text>
+                  </VStack>
+                </Center>
               </CardBody>
             </Card>
-          ))
-        )}
-      </Stack>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+          ) : (
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+              {docs.map((doc, idx) => (
+                <Card 
+                  key={doc._id} 
+                  variant="outline"
+                  borderColor={idx === 0 ? "teal.400" : undefined}
+                  borderWidth={idx === 0 ? 2 : 1}
+                  position="relative"
+                >
+                  {idx === 0 && (
+                    <Box
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      zIndex={1}
+                    >
+                      <Badge colorScheme="teal" variant="solid">
+                        Activo
+                      </Badge>
+                    </Box>
+                  )}
+                  
+                  <CardHeader pb={2}>
+                    <VStack align="start" spacing={1} flex={1}>
+                      <HStack>
+                        <FiFileText color="#319795" />
+                        <Text fontWeight="bold" fontSize="md" noOfLines={2}>
+                          {doc.fileName}
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  </CardHeader>
+                  
+                  <CardBody pt={0}>
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between" fontSize="sm" color="gray.600">
+                        <HStack>
+                          <FiCalendar />
+                          <Text>{formatDate(doc.uploadedAt)}</Text>
+                        </HStack>
+                        {doc.fileSize && <Text>{doc.fileSize}</Text>}
+                      </HStack>
+                      
+                      {doc.notes && (
+                        <Text fontSize="xs" color="gray.500" noOfLines={2}>
+                          <strong>Notas:</strong> {doc.notes}
+                        </Text>
+                      )}
+
+                      <HStack spacing={2}>
+                        <Button
+                          size="sm"
+                          leftIcon={<FiEye />}
+                          colorScheme="blue"
+                          variant="outline"
+                          as="a"
+                          href={doc.url}
+                          target="_blank"
+                          flex={1}
+                        >
+                          Ver
+                        </Button>
+                        <Button
+                          size="sm"
+                          leftIcon={<FiDownload />}
+                          colorScheme="green"
+                          variant="outline"
+                          as="a"
+                          href={doc.url}
+                          download
+                          flex={1}
+                        >
+                          Descargar
+                        </Button>
+                        <IconButton
+                          size="sm"
+                          icon={<FiTrash2 />}
+                          colorScheme="red"
+                          variant="outline"
+                          aria-label="Eliminar plan"
+                          onClick={() => handleDeletePlan(doc._id)}
+                        />
+                      </HStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              ))}
+            </SimpleGrid>
+          )}
+        </Box>
+      </VStack>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Agregar nuevo plan nutricional</ModalHeader>
+          <ModalHeader>
+            <VStack align="start" spacing={1}>
+              <Text fontSize="lg" fontWeight="bold">
+                Agregar nuevo plan nutricional
+              </Text>
+              <Text fontSize="sm" color="gray.600">
+                Para {patientData?.firstName} {patientData?.lastName}
+              </Text>
+            </VStack>
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Box
-              border="2px dashed #319795"
-              borderRadius="md"
-              p={8}
-              textAlign="center"
-              bg={dragActive ? "teal.50" : "white"}
-              onDragOver={e => { e.preventDefault(); setDragActive(true); }}
-              onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
-              onDrop={handleDrop}
-              cursor="pointer"
-            >
-              <FiUpload size={32} color="#319795" style={{ marginBottom: 8 }} />
-              <Text mb={2}>Arrastra y suelta el archivo aquí</Text>
-              <Text fontSize="sm" color="gray.500">o haz clic para seleccionar</Text>
-              <input
-                type="file"
-                accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                style={{ display: "none" }}
-                id="file-upload-input"
-                onChange={handleFileChange}
-                disabled={uploading}
+            <VStack spacing={6} align="stretch">
+              <Alert status="info">
+                <AlertIcon />
+                <Box>
+                  <AlertTitle>Instrucciones:</AlertTitle>
+                  <AlertDescription>
+                    1. Selecciona un archivo PDF con el plan nutricional<br />
+                    2. Agrega notas opcionales sobre el plan<br />
+                    3. El plan se activará automáticamente para el paciente
+                  </AlertDescription>
+                </Box>
+              </Alert>
+
+              {/* File Upload Area */}
+              <ChakraFileUpload
+                onFileSelect={handleFileSelect}
+                isUploading={uploading}
+                uploadProgress={uploadProgress}
+                placeholder="Arrastra y suelta un archivo PDF aquí, o haz clic para seleccionar"
+                description="Solo archivos PDF son permitidos"
               />
-              <label htmlFor="file-upload-input">
-                <Button as="span" mt={4} colorScheme="teal" isLoading={uploading}>
-                  Seleccionar archivo
-                </Button>
-              </label>
-            </Box>
-              <Textarea
-                placeholder="Notas"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                mt={4}
-              />
+
+              {/* Notes Section */}
+              <Box>
+                <Text mb={2} fontWeight="semibold">Notas del plan (opcional):</Text>
+                <Textarea
+                  placeholder="Agrega notas sobre este plan nutricional, objetivos específicos, recomendaciones especiales, etc."
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  rows={4}
+                  resize="vertical"
+                />
+              </Box>
+            </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} variant="ghost">Cancelar</Button>
+            <Button onClick={onClose} variant="ghost" mr={3}>
+              Cancelar
+            </Button>
+            <Button 
+              colorScheme="teal" 
+              onClick={onClose}
+              disabled={uploading}
+            >
+              Cerrar
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

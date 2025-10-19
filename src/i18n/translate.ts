@@ -83,15 +83,24 @@ export const translateFoodItem = (item: string) => {
   const dictionary: {
     [key: string]: string;
   } = {
+    // Liquids
     water: "agua",
-    "sparkling-water": "soda",
+    coffee: "café",
+    mate: "mate",
+    tea: "té",
+    juice: "jugo",
+    milk: "leche",
     soda: "gaseosas",
-    juice: "jugos",
+    "sparkling-water": "soda",
     "flavored-water": "aguas saborizadas",
+    // Sweets
     chocolate: "chocolate",
-    "ice-cream": "helado",
+    candy: "caramelos",
+    candies: "caramelos", // Alternative spelling
     cookies: "galletas",
-    candies: "caramelos",
+    "ice_cream": "helado",
+    "ice-cream": "helado", // Alternative spelling
+    // Snacks
     "french-fries": "papas fritas",
     popcorn: "pochoclos",
     nuts: "frutos secos",
@@ -100,15 +109,18 @@ export const translateFoodItem = (item: string) => {
     fruit: "fruta",
     "cereal-bars": "barritas de cereal",
     granola: "granola",
+    // Sweeteners
     "white-sugar": "azúcar blanco",
     honey: "miel",
     "brown-sugar": "azúcar moreno",
+    // Fats
     butter: "manteca",
     oil: "aceite",
     margarine: "margarina",
     "animal-fat": "grasa animal",
     "vegetable-spray": "rocío vegetal",
     "extra-virgin-olive-oil": "aceite de oliva virgen extra",
+    // Dairy
     whole: "enteros",
     skimmed: "descremados",
     creams: "cremas",
@@ -151,10 +163,11 @@ export const getActivityLevelLabel = (level: number): string => {
   return dictionary[level] || "";
 };
 
-export const translateFrequency = (frequency: string) => {
+export const translateFrequency = (frequency: string | number) => {
   const dictionary: {
     [key: string]: string;
   } = {
+    // String values
     never: "Nunca",
     rarely: "Raramente",
     sometimes: "A veces",
@@ -162,6 +175,70 @@ export const translateFrequency = (frequency: string) => {
     always: "Siempre",
     social: "Socialmente",
     no: "No",
+    // Numeric values (from lifestyle form)
+    "0": "No seleccionado",
+    "1": "No",
+    "2": "Raramente", 
+    "3": "Socialmente",
+    "4": "Frecuentemente",
   };
-  return dictionary[frequency] || frequency;
+  return dictionary[frequency.toString()] || frequency.toString();
+};
+
+export const translateDiagnosedIllness = (value: string | number) => {
+  const dictionary: {
+    [key: string]: string;
+  } = {
+    "0": "No seleccionado",
+    "1": "Ninguna",
+    "2": "Diabetes",
+    "3": "Hepatitis",
+    "4": "Colesterol alto",
+    "5": "Presión arterial alta",
+    "6": "Síndrome de colon irritable",
+    "7": "Enfermedad renal",
+    "8": "Tiroides (hiper/hipotiroidismo)",
+    "9": "TDA",
+    "10": "Otra",
+  };
+  return dictionary[value.toString()] || value.toString();
+};
+
+export const translateMedication = (value: string | number) => {
+  const dictionary: {
+    [key: string]: string;
+  } = {
+    "0": "No seleccionado",
+    "1": "Ninguno",
+    "2": "Diabetes",
+    "3": "Anticonceptivos",
+    "4": "Antidepresivos",
+    "5": "Otros",
+  };
+  return dictionary[value.toString()] || value.toString();
+};
+
+export const translateWeightLossMeds = (value: string | number) => {
+  const dictionary: {
+    [key: string]: string;
+  } = {
+    "0": "No seleccionado",
+    "1": "Ninguno",
+    "2": "Recetados",
+    "3": "Sin receta",
+  };
+  return dictionary[value.toString()] || value.toString();
+};
+
+export const translateDietType = (value: string) => {
+  const dictionary: {
+    [key: string]: string;
+  } = {
+    vegetarian: "Vegetarianismo",
+    vegan: "Veganismo",
+    celiac: "Celiaquía",
+    pescetarian: "Pescetarianismo",
+    omnivore: "Omnívoro",
+  };
+  return dictionary[value] || value;
 };
