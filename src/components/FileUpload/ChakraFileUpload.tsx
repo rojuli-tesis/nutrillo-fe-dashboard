@@ -27,6 +27,7 @@ interface ChakraFileUploadProps {
   disabled?: boolean;
   placeholder?: string;
   description?: string;
+  selectedFile?: File | null;
 }
 
 const ChakraFileUpload: React.FC<ChakraFileUploadProps> = ({
@@ -37,12 +38,16 @@ const ChakraFileUpload: React.FC<ChakraFileUploadProps> = ({
   uploadProgress = 0,
   disabled = false,
   placeholder = "Selecciona un archivo PDF",
-  description = "Solo archivos PDF son permitidos"
+  description = "Solo archivos PDF son permitidos",
+  selectedFile: externalSelectedFile = null
 }) => {
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [internalSelectedFile, setInternalSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  
+  // Use external selected file if provided, otherwise use internal state
+  const selectedFile = externalSelectedFile !== null ? externalSelectedFile : internalSelectedFile;
 
   const handleFileSelect = (file: File) => {
     // Validate file type
@@ -69,7 +74,9 @@ const ChakraFileUpload: React.FC<ChakraFileUploadProps> = ({
       return;
     }
 
-    setSelectedFile(file);
+    if (externalSelectedFile === null) {
+      setInternalSelectedFile(file);
+    }
     onFileSelect(file);
   };
 
@@ -101,10 +108,14 @@ const ChakraFileUpload: React.FC<ChakraFileUploadProps> = ({
   };
 
   const clearFile = () => {
-    setSelectedFile(null);
+    if (externalSelectedFile === null) {
+      setInternalSelectedFile(null);
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    // Call onFileSelect with null to notify parent
+    onFileSelect(null as any);
   };
 
   const openFileDialog = () => {

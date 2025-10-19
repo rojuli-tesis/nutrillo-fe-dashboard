@@ -478,7 +478,7 @@ export function IngredientModal({ ingredient, onClose, onSave, onDelete }: Ingre
                         <Button onClick={addAllergen}>Agregar</Button>
                       </HStack>
                       <HStack mt={2} wrap="wrap" spacing={1}>
-                        {formData.dietary?.allergens.map((allergen) => (
+                        {(formData.dietary?.allergens || []).map((allergen) => (
                           <Tag key={allergen} size="sm" colorScheme="red">
                             {allergen}
                             <TagCloseButton onClick={() => removeAllergen(allergen)} />

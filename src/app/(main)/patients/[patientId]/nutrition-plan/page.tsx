@@ -18,6 +18,7 @@ import {
   useDisclosure,
   Modal,
   ModalOverlay,
+  Input,
   ModalContent,
   ModalHeader,
   ModalCloseButton,
@@ -55,7 +56,8 @@ interface NutritionPlanDoc {
   _id: string;
   fileName: string;
   url: string;
-  uploadedAt: string;
+  createdAt: string;
+  updatedAt: string;
   fileSize?: string;
   notes?: string;
   isActive?: boolean;
@@ -70,6 +72,8 @@ const NutritionPlanPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [notes, setNotes] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("");
   const toast = useToast();
 
   const loadData = async () => {
@@ -80,7 +84,8 @@ const NutritionPlanPage = () => {
         restClient.get<NutritionPlanDoc[]>(`/nutrition-plan/patient/${params.patientId}`),
       ]);
       setPatientData(patient);
-      setDocs(plans.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()));
+      console.log('Nutrition plans received:', plans);
+      setDocs(plans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     } catch (e) {
       toast({ title: "Error cargando datos", status: "error" });
     } finally {
@@ -93,7 +98,28 @@ const NutritionPlanPage = () => {
     // eslint-disable-next-line
   }, [params.patientId]);
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = (file: File | null) => {
+    if (file) {
+      setSelectedFile(file);
+      setFileName(file.name.replace(/\.[^/.]+$/, "")); // Remove extension for editing
+    } else {
+      setSelectedFile(null);
+      setFileName("");
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo antes de subir",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(0);
 
@@ -110,14 +136,19 @@ const NutritionPlanPage = () => {
 
     try {
       const formData = new FormData();
-      formData.append("document", file);
+      
+      // Create a new File object with the custom filename
+      const customFileName = fileName.trim() ? `${fileName.trim()}.pdf` : selectedFile.name;
+      const customFile = new File([selectedFile], customFileName, { type: selectedFile.type });
+      
+      formData.append("document", customFile);
       formData.append("notes", notes);
       
       await restClient.post(`/nutrition-plan/patient/${params.patientId}/upload`, formData);
       
       toast({ 
         title: "Plan subido exitosamente", 
-        description: `El plan "${file.name}" ha sido subido correctamente`,
+        description: `El plan "${customFileName}" ha sido subido correctamente`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -125,6 +156,8 @@ const NutritionPlanPage = () => {
       
       onClose();
       setNotes("");
+      setSelectedFile(null);
+      setFileName("");
       loadData();
     } catch (e) {
       toast({ 
@@ -139,6 +172,13 @@ const NutritionPlanPage = () => {
       setUploadProgress(0);
       clearInterval(progressInterval);
     }
+  };
+
+  const handleClose = () => {
+    setSelectedFile(null);
+    setFileName("");
+    setNotes("");
+    onClose();
   };
 
   const handleDeletePlan = async (planId: string) => {
@@ -164,7 +204,13 @@ const NutritionPlanPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    console.log('Formatting date:', dateString, 'Type:', typeof dateString);
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date string:', dateString);
+      return 'Fecha inválida';
+    }
+    return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -297,7 +343,7 @@ const NutritionPlanPage = () => {
                       <HStack justify="space-between" fontSize="sm" color="gray.600">
                         <HStack>
                           <FiCalendar />
-                          <Text>{formatDate(doc.uploadedAt)}</Text>
+                          <Text>{formatDate(doc.createdAt)}</Text>
                         </HStack>
                         {doc.fileSize && <Text>{doc.fileSize}</Text>}
                       </HStack>
@@ -372,8 +418,9 @@ const NutritionPlanPage = () => {
                   <AlertTitle>Instrucciones:</AlertTitle>
                   <AlertDescription>
                     1. Selecciona un archivo PDF con el plan nutricional<br />
-                    2. Agrega notas opcionales sobre el plan<br />
-                    3. El plan se activará automáticamente para el paciente
+                    2. Edita el nombre del archivo si es necesario<br />
+                    3. Agrega notas opcionales sobre el plan<br />
+                    4. Haz clic en "Subir Plan" para completar la carga
                   </AlertDescription>
                 </Box>
               </Alert>
@@ -385,7 +432,24 @@ const NutritionPlanPage = () => {
                 uploadProgress={uploadProgress}
                 placeholder="Arrastra y suelta un archivo PDF aquí, o haz clic para seleccionar"
                 description="Solo archivos PDF son permitidos"
+                selectedFile={selectedFile}
               />
+
+              {/* Filename Section */}
+              {selectedFile && (
+                <Box>
+                  <Text mb={2} fontWeight="semibold">Nombre del archivo:</Text>
+                  <Input
+                    placeholder="Ingresa el nombre del archivo"
+                    value={fileName}
+                    onChange={e => setFileName(e.target.value)}
+                    size="md"
+                  />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    El archivo se guardará como: {fileName.trim() ? `${fileName.trim()}.pdf` : selectedFile.name}
+                  </Text>
+                </Box>
+              )}
 
               {/* Notes Section */}
               <Box>
@@ -401,15 +465,16 @@ const NutritionPlanPage = () => {
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} variant="ghost" mr={3}>
+            <Button onClick={handleClose} variant="ghost" mr={3} disabled={uploading}>
               Cancelar
             </Button>
             <Button 
               colorScheme="teal" 
-              onClick={onClose}
-              disabled={uploading}
+              onClick={handleUpload}
+              disabled={uploading || !selectedFile}
+              leftIcon={uploading ? undefined : <FiUpload />}
             >
-              Cerrar
+              {uploading ? 'Subiendo...' : 'Subir Plan'}
             </Button>
           </ModalFooter>
         </ModalContent>
