@@ -20,7 +20,7 @@ ENV NODE_ENV=${NODE_ENV}
 # Conditionally run the build step based on the environment
 RUN if [ "$NODE_ENV" = "production" ]; then yarn build; fi
 # Expose the port that the app runs on
-EXPOSE 3000
+EXPOSE 3001
 
 # Start the application
 CMD ["npm", "start"]
