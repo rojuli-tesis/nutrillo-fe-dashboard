@@ -420,7 +420,7 @@ const NutritionPlanPage = () => {
                     1. Selecciona un archivo PDF con el plan nutricional<br />
                     2. Edita el nombre del archivo si es necesario<br />
                     3. Agrega notas opcionales sobre el plan<br />
-                    4. Haz clic en "Subir Plan" para completar la carga
+                    4. Haz clic en &quot;Subir Plan&quot; para completar la carga
                   </AlertDescription>
                 </Box>
               </Alert>
