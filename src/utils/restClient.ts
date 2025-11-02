@@ -18,13 +18,13 @@ apiClient.interceptors.response.use(
   }
 );
 
-const post = async (url: string, data: any) => {
+const post = async <T>(url: string, data: any): Promise<T> => {
   const config = {
     headers: data instanceof FormData
       ? { 'Content-Type': 'multipart/form-data' }
       : { 'Content-Type': 'application/json' }
   };
-  const response = await apiClient.post(url, data, config);
+  const response = await apiClient.post<T>(url, data, config);
   return response.data;
 };
 

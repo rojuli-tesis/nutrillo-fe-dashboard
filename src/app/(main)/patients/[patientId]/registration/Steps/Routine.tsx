@@ -23,7 +23,7 @@ const RoutineStep = ({
       {info.map((section, index) =>
         Object.entries(section).map(([key, value]) => (
           <Text key={key}>
-            {translateRoutineStep(key)}: {translateRoutineValue(value)}
+            {translateRoutineStep(key)}: {translateRoutineValue(value as string)}
           </Text>
         )),
       )}
