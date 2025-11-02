@@ -18,7 +18,7 @@ const Notes = ({
     if (notes === storedNotes) {
       return;
     }
-    const { success } = await restClient.patch(
+    const { success } = await restClient.patch<{ success: boolean }>(
       `/patient/${userId}/registration-notes`,
       {
         notes,
