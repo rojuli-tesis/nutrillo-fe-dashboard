@@ -4,6 +4,9 @@ FROM node:18.17.0-alpine
 # Set the working directory
 WORKDIR /app
 
+# Install wget for container health checks
+RUN apk add --no-cache wget
+
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
@@ -18,9 +21,12 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 # Conditionally run the build step based on the environment
-RUN if [ "$NODE_ENV" = "production" ]; then yarn build; fi
+RUN if [ "$NODE_ENV" = "production" ]; then npm run build; fi
 # Expose the port that the app runs on
 EXPOSE 3001
+
+# Ensure the Next.js server listens on all interfaces
+ENV HOST=0.0.0.0
 
 # Start the application
 CMD ["npm", "start"]
