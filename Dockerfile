@@ -7,6 +7,15 @@ WORKDIR /app
 # Install wget for container health checks
 RUN apk add --no-cache wget
 
+# Build arguments for environment
+ARG NODE_ENV=production
+ARG BUILD_ID=unknown
+# Use BUILD_ID to force cache invalidation on each deployment
+# This ensures we always rebuild with latest code even if files haven't changed
+LABEL build_id=${BUILD_ID}
+# Echo BUILD_ID to create a layer that changes on each deployment, forcing cache invalidation
+RUN echo "Build ID: ${BUILD_ID}"
+
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
@@ -16,9 +25,8 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build arguments for environment
-ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+ENV BUILD_ID=${BUILD_ID}
 
 # Conditionally run the build step based on the environment
 RUN if [ "$NODE_ENV" = "production" ]; then npm run build; fi
