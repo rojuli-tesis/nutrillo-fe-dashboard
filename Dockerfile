@@ -25,6 +25,15 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Verify critical files exist before building
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      echo "Verifying required files exist..."; \
+      test -f src/utils/restClient.ts || (echo "ERROR: src/utils/restClient.ts not found" && exit 1); \
+      test -f src/components/Button/index.tsx || (echo "ERROR: src/components/Button/index.tsx not found" && exit 1); \
+      test -f src/components/dashboard/StatsCard.tsx || (echo "ERROR: src/components/dashboard/StatsCard.tsx not found" && exit 1); \
+      echo "✓ All required files found"; \
+    fi
+
 ENV NODE_ENV=${NODE_ENV}
 ENV BUILD_ID=${BUILD_ID}
 
