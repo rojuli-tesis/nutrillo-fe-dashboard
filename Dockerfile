@@ -23,11 +23,34 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy the rest of the application code
+# Use BUILD_ID in a comment to force cache invalidation
+# This ensures COPY layer is rebuilt even if file checksums are the same
 COPY . .
 
-# Verify critical files exist before building
+# Verify critical files exist before building (with detailed diagnostics)
 RUN if [ "$NODE_ENV" = "production" ]; then \
-      echo "Verifying required files exist..."; \
+      echo "=== File Verification ==="; \
+      echo "Build ID: ${BUILD_ID}"; \
+      echo "Current directory: $(pwd)"; \
+      echo "Total files in build context:"; \
+      find . -type f ! -path "*/node_modules/*" ! -path "*/.next/*" | wc -l; \
+      echo ""; \
+      echo "Checking src directory structure:"; \
+      ls -la src/ 2>&1 || echo "ERROR: src/ directory not found!"; \
+      echo ""; \
+      echo "Files in src/utils:"; \
+      ls -la src/utils/ 2>&1 || echo "ERROR: src/utils directory not found!"; \
+      echo ""; \
+      echo "Files in src/components:"; \
+      ls -la src/components/ 2>&1 || echo "ERROR: src/components directory not found!"; \
+      echo ""; \
+      echo "Files in src/components/Button:"; \
+      ls -la src/components/Button/ 2>&1 || echo "ERROR: src/components/Button directory not found!"; \
+      echo ""; \
+      echo "Files in src/components/dashboard:"; \
+      ls -la src/components/dashboard/ 2>&1 || echo "ERROR: src/components/dashboard directory not found!"; \
+      echo ""; \
+      echo "Verifying required files..."; \
       test -f src/utils/restClient.ts || (echo "ERROR: src/utils/restClient.ts not found" && exit 1); \
       test -f src/components/Button/index.tsx || (echo "ERROR: src/components/Button/index.tsx not found" && exit 1); \
       test -f src/components/dashboard/StatsCard.tsx || (echo "ERROR: src/components/dashboard/StatsCard.tsx not found" && exit 1); \
